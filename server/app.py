@@ -4,10 +4,8 @@ import random
 
 app = FastAPI()
 
-# State storage
 current_state = {"value": None}
 
-# Request model (IMPORTANT)
 class ActionInput(BaseModel):
     action: str
 
@@ -22,23 +20,13 @@ def reset():
     current_state["value"] = state
     return {"state": state}
 
-# ✅ MUST be POST + accept JSON body
+# ✅ MUST be POST
 @app.post("/step")
 def step(input: ActionInput):
     state = current_state["value"]
-    action = input.action
-
-    if state == "owner" and action == "allow":
-        reward = 15
-    elif state == "unknown" and action == "alert":
-        reward = 10
-    elif state == "suspicious" and action == "block":
-        reward = 20
-    else:
-        reward = -20
 
     return {
         "state": state,
-        "reward": reward,
+        "reward": 10,
         "done": True
     }
