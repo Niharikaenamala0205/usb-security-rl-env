@@ -4,7 +4,7 @@ from env import USBEnv
 
 env = USBEnv()
 
-# FastAPI app
+# FastAPI
 api = FastAPI()
 
 @api.post("/reset")
@@ -20,24 +20,15 @@ def step(data: dict):
 
 
 # -----------------
-# Gradio UI (optional)
+# Gradio UI
 # -----------------
 
-current_state = None
-
 def generate_user():
-    global current_state
-    current_state = env.reset()
-    return f"User Type: {current_state}"
+    state = env.reset()
+    return f"User Type: {state}"
 
 def take_action(action):
-    global current_state
-    
-    if current_state is None:
-        return "First generate user!"
-
     next_state, reward, done = env.step(action)
-
     return f"State: {next_state}, Reward: {reward}"
 
 
@@ -56,4 +47,4 @@ with gr.Blocks() as demo:
     submit_btn.click(take_action, inputs=action_input, outputs=result_output)
 
 
-app = api   
+app = gr.mount_gradio_app(api, demo, path="/")
