@@ -11,13 +11,20 @@ env = USBEnv()
 # -----------------
 api = FastAPI()
 
+from fastapi import Request
+
 @api.post("/reset")
-def reset():
+async def reset(request: Request):
     state = env.reset()
     return {"state": state}
 
 @api.post("/step")
-def step(data: dict):
+async def step(request: Request):
+    data = await request.json()
+    action = data.get("action")
+
+    next_state, reward, done = env.step(action)
+    return {"state": next_state, "reward": reward, "done": done}
     action = data.get("action")
     next_state, reward, done = env.step(action)
     return {"state": next_state, "reward": reward, "done": done}
