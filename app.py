@@ -1,13 +1,14 @@
-import os
-os.system("pip install --upgrade gradio")
-
 import gradio as gr
 from fastapi import FastAPI
+import uvicorn
+import threading
 from env import USBEnv
 
 env = USBEnv()
 
-# ✅ FastAPI
+# -----------------
+# FastAPI
+# -----------------
 api = FastAPI()
 
 @api.post("/reset")
@@ -73,5 +74,17 @@ with gr.Blocks() as demo:
     generate_btn.click(generate_user, outputs=state_output)
     submit_btn.click(take_action, inputs=action_input, outputs=result_output)
 
-# 🔥 THIS IS THE KEY FIX
-app = gr.mount_gradio_app(api, demo, path="/")
+
+# -----------------
+# RUN BOTH (IMPORTANT 🔥)
+# -----------------
+
+def run_api():
+    uvicorn.run(api, host="0.0.0.0", port=8000)
+
+if __name__ == "__main__":
+    # Run FastAPI in background
+    threading.Thread(target=run_api).start()
+
+    # Run Gradio
+    demo.launch(server_name="0.0.0.0", server_port=7860)
