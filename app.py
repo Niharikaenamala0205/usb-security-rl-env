@@ -2,19 +2,16 @@ import gradio as gr
 from fastapi import FastAPI
 from env import USBEnv
 
-# 🔹 Create environment
 env = USBEnv()
 
-# 🔹 FastAPI (for OpenEnv checks)
+# ✅ FastAPI
 api = FastAPI()
 
-# ✅ RESET API
 @api.post("/reset")
 def reset():
     state = env.reset()
     return {"state": state}
 
-# ✅ STEP API
 @api.post("/step")
 def step(data: dict):
     action = data.get("action")
@@ -22,19 +19,17 @@ def step(data: dict):
     return {"state": next_state, "reward": reward, "done": done}
 
 
-# -----------------------------
-# 🔹 Gradio UI
-# -----------------------------
+# -----------------
+# Gradio UI
+# -----------------
 
 current_state = None
 
-# Step 1: Generate User
 def generate_user():
     global current_state
     current_state = env.reset()
     return f"🔍 User Type: {current_state}"
 
-# Step 2: Take Action
 def take_action(action):
     global current_state
     
@@ -61,24 +56,19 @@ def take_action(action):
 📊 Result: {decision}
 """
 
-# UI
 with gr.Blocks() as demo:
     gr.Markdown("# 🔐 AI USB Intrusion Detection System")
 
-    gr.Markdown("### Step 1: Click below to generate user type")
-    
     state_output = gr.Textbox(label="User Info")
-    generate_btn = gr.Button("Step 1: Generate User Type")
-
-    gr.Markdown("### Step 2: Choose Action and Click Submit")
+    generate_btn = gr.Button("Generate User")
 
     action_input = gr.Radio(["allow", "block", "alert"], label="Choose Action")
     submit_btn = gr.Button("Submit Action")
 
     result_output = gr.Textbox(label="Result")
 
-    generate_btn.click(fn=generate_user, outputs=state_output)
-    submit_btn.click(fn=take_action, inputs=action_input, outputs=result_output)
+    generate_btn.click(generate_user, outputs=state_output)
+    submit_btn.click(take_action, inputs=action_input, outputs=result_output)
 
-# 🔥 IMPORTANT (Gradio launch)
-demo.launch()
+# 🔥 THIS IS THE KEY FIX
+app = gr.mount_gradio_app(api, demo, path="/")
